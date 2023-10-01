@@ -1,24 +1,41 @@
 from PyQt5.QtWidgets import *
 import sys
+from matplotlib.backends.backend_qt5agg import FigureCanvas as FigureCanvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 
-import pandas as pd
+from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
+from src import DataReader
+
 
 class MyApp(QWidget):
-    def __init__(self):
+
+    appSize = (800, 600)
+    appLocation = (300, 300)
+    appName = 'DataMiner'
+
+    def __init__(self, stateManager, dataManager):
         super().__init__()
         self.initUI()
+        self.stateManager = stateManager
+        self.dataManager = dataManager
 
     def initUI(self):
-        self.setWindowTitle('aa')
-        self.move(300, 300)
-        self.resize(400, 200)
+        self.setWindowTitle(self.appName)
+        self.move(self.appLocation[0], self.appLocation[1])
+        self.resize(self.appSize[0], self.appSize[1])
 
         self.putButtons()
-        vBox = QVBoxLayout()
-        vBox.addWidget(self.btn1)
 
+        self.canvas = FigureCanvas(Figure(figsize=(4, 3)))
 
-        self.setLayout(vBox)
+        self.ax = self.canvas.figure.subplots(4, 4)
+
+        self.vBox = QVBoxLayout()
+        self.vBox.addWidget(self.btn1)
+        self.vBox.addWidget(self.canvas)
+
+        self.setLayout(self.vBox)
         self.show()
 
 
@@ -27,11 +44,26 @@ class MyApp(QWidget):
         self.btn1 = QPushButton('btn1', self)
         self.btn1.clicked.connect(self.btn1_clicked)
 
+        self.btn2 = QPushButton('print df', self)
+        self.btn2.clicked.connect(self.btn2_clicked)
+
     def btn1_clicked(self):
         fname = QFileDialog.getOpenFileName(self)
+        self.dataManager.readData(fname[0])
+        self.updateGraph()
+    def btn2_clicked(self):
+        print(self.dataManager.df)
+    def updateGraph(self):
 
-        print(fname[0])
-        print(fname[1])
+        for j, column in enumerate(self.dataManager.df.columns[:10]):
+            ax = self.ax[j % 4][int(j / 4)]
+            ax.plot(self.dataManager.df.iloc[:, self.dataManager.mainColumn], self.dataManager.df.iloc[:, j])
+            ax.set_title(column)
+            print(self.dataManager.df.iloc[:, j])
+        # self.ax.show()
+        self.canvas.draw()
+        print('update done')
+
 
 if __name__ == '__main__':
 
