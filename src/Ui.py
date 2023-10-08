@@ -28,14 +28,30 @@ class MyApp(QWidget):
         self.putButtons()
 
         self.canvas = FigureCanvas(Figure(figsize=(4, 3)))
-
         self.ax = self.canvas.figure.subplots(4, 4)
 
-        self.vBox = QVBoxLayout()
-        self.vBox.addWidget(self.btn1)
-        self.vBox.addWidget(self.canvas)
 
-        self.setLayout(self.vBox)
+        self.vBoxLeft = QVBoxLayout()
+        self.vBoxLeft.addWidget(self.btn1)
+        self.vBoxLeft.addWidget(self.canvas)
+
+        self.vBoxRight = QVBoxLayout()
+        self.vBoxRight.addWidget(self.btn2)
+        # self.vBoxRight.addWidget(self.canvas)
+
+        self.hBoxRight = QHBoxLayout()
+        self.hBoxRight.addWidget(self.btn3)
+        self.hBoxRight.addWidget(self.btn4)
+
+        self.vBoxRight.addLayout(self.hBoxRight)
+
+        self.hBox = QHBoxLayout()
+        self.hBox.addLayout(self.vBoxLeft, 2)
+        self.hBox.addLayout(self.vBoxRight, 1)
+
+
+        self.setLayout(self.hBox)
+
         self.show()
 
 
@@ -47,6 +63,10 @@ class MyApp(QWidget):
         self.btn2 = QPushButton('print df', self)
         self.btn2.clicked.connect(self.btn2_clicked)
 
+        self.btn3 = QPushButton('Btn3', self)
+
+        self.btn4 = QPushButton('Btn4', self)
+
     def btn1_clicked(self):
         fname = QFileDialog.getOpenFileName(self)
         self.dataManager.readData(fname[0])
@@ -55,7 +75,7 @@ class MyApp(QWidget):
         print(self.dataManager.df)
     def updateGraph(self):
 
-        for j, column in enumerate(self.dataManager.df.columns[:10]):
+        for j, column in enumerate(self.dataManager.df.columns):
             ax = self.ax[j % 4][int(j / 4)]
             ax.plot(self.dataManager.df.iloc[:, self.dataManager.mainColumn], self.dataManager.df.iloc[:, j])
             ax.set_title(column)
